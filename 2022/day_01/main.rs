@@ -28,7 +28,7 @@ fn task_one(input: &Vec<String>) -> i32 {
     
     let mut max: i32 = 0;
     let mut curr_elf_val: i32 = 0;
-
+    
     for line in input.iter() {
         if !line.eq("") {
             // if line is not empty, add calorie val to current elf
