@@ -1,4 +1,5 @@
 **/main
 **/test
 **/.env
-
+.DS_Store
+.vscode/
