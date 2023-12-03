@@ -91,9 +91,3 @@ if __name__ == "__main__":
 
     task2 = task_two(input)
     print(f"task 2: {task2}")
-
-'''
-35 and 467 should only be counted once -- they touch the same *, but also if they were touching 
-separate chars
-
-'''
