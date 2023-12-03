@@ -19,8 +19,8 @@ def task_one(input):
     total = 0
     for line in input:
         # get the id number
-        game_id, game = line.split(":")  # 'Game #'
-        id = int(game_id.split()[1])     # '#'
+        game_id, content = line.split(":")  # ['Game id', 'content']
+        id = int(game_id.split()[1])        # ['Game', 'id']
 
         # get a boolean mask to check for invalid numbers (greater than the max)
         r_mask = np.array([int(num) for num in re.findall(r, line)]) > max_rgb[0]
