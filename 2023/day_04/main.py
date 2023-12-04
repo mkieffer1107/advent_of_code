@@ -24,41 +24,89 @@ def task_one(input):
 
     return total
 
-
-def task_two(input):
+def task_two_slow(input):
     '''
     This time, matches earn cards. If card 1 has 4 matches, then you get additional copies
     of the 4 cards below, i.e., an extra copy of cards 2, 3, 4, and 5. Return the total
     number of cards 
 
-    This can totally be done recursively ...
+    Count the number of matches for each card first, and then increment the card counts below
+
+    This can totally be optimized with recursively / with dynamic programming...
     '''
-    total = 0
     # record the number of copies of each card number
-    num_copies = [1 for card in range(len(input))]
+    # num_copies = [1 for card in range(len(input))]
+    num_copies = [1] * len(input)   # the number of copies of each card
+    num_matches = [0] * len(input)  # the number of matches each card has
+
     for i, line in enumerate(input):
-        print(i)
         # get the card number
         card_id, card_vals = line.split(":")
-        _, id = card_id.split()
-        id = int(id) - 1  # 0-based indexing
-        
-        # repeat 
-        for _ in range(num_copies[i]):
-            # convert the string nums into a set of ints
-            winning_nums_str, card_nums_str = card_vals.split("|")
-            winning_nums = set([int(num) for num in winning_nums_str.split()])
-            card_nums = set([int(num) for num in card_nums_str.split()])
-            matches = winning_nums.intersection(card_nums)
+        # convert the string nums into a set of ints
+        winning_nums_str, card_nums_str = card_vals.split("|")
+        winning_nums = {int(num) for num in winning_nums_str.split()}
+        card_nums = {int(num) for num in card_nums_str.split()}
 
-            # increment the count of the cards below
+        # store the number of matches the current card has
+        num_matches[i] = len(winning_nums.intersection(card_nums))
+
+    # iterate over card id
+    for i in range(len(input)):
+        # get new cards for each copy of the current card
+        for _ in range(num_copies[i]):
+            for j in range(1, num_matches[i] + 1):
+                # increment the count of the cards below current card for each match
+                #   i: the current card
+                #   j: idx of next cards
+                # j starts at 0, or just i + 0 = i, so use (j+1) instead
+                # or can do range(1, len(matches)+1) to use j instead of (j+1)
+                num_copies[i + j] += 1
+
+    return sum(num_copies)
+
+def task_two(input):
+    '''
+    this line 
+        'for _ in range(num_copies[i]):'
+    above is unecessary and slows the code down
+
+    we can remove that line by changing
+        num_copies[i + j] += 1
+    to 
+        num_copies[i + j] += num_copies[i]
+
+    so we add all copies at once instead of using an extra for loop
+    which added a single value at a time
+    '''
+    # record the number of copies of each card number
+    # num_copies = [1 for card in range(len(input))]
+    num_copies = [1] * len(input)   # the number of copies of each card
+    num_matches = [0] * len(input)  # the number of matches each card has
+
+    for i, line in enumerate(input):
+        # get the card number
+        card_id, card_vals = line.split(":")
+        # convert the string nums into a set of ints
+        winning_nums_str, card_nums_str = card_vals.split("|")
+        winning_nums = {int(num) for num in winning_nums_str.split()}
+        card_nums = {int(num) for num in card_nums_str.split()}
+
+        # store the number of matches the current card has
+        num_matches[i] = len(winning_nums.intersection(card_nums))
+
+    # iterate over card id
+    for i in range(len(input)):
+        # increment the count of the cards below current card for each match
+        for j in range(1, num_matches[i] + 1):
+            # increment the count of the cards below current card for each match
             #   i: the current card
             #   j: idx of next cards
             # j starts at 0, or just i + 0 = i, so use (j+1) instead
-            for j in range(len(matches)):
-                num_copies[i + (j + 1)] += 1
+            # or can do range(1, len(matches)+1) to use j instead of (j+1)
+            num_copies[i + j] += num_copies[i]
 
     return sum(num_copies)
+
 
 if __name__ == "__main__":
     with open("input.txt", "r") as f:
