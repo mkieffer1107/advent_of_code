@@ -1,7 +1,7 @@
 def check_row(row, j, left_or_right):
     '''Return lowest/highest index of valid char in row'''
     assert left_or_right == -1 or left_or_right == 1 # move left == -1, move right == 1
-    while (0<= j < len(row)) and row[j].isdigit():   # checks left-to-right, so can include boundary condition first
+    while (0 <= j < len(row)) and row[j].isdigit():   # checks left-to-right, so can include boundary condition first
         j += left_or_right
     return j - left_or_right # increment / decrement to get last valid index
 
