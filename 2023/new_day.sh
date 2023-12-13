@@ -23,7 +23,7 @@ def task_two(input):
 
 if __name__ == "__main__":
     with open("input.txt", "r") as f:
-        input = [line.rstrip() for line in f.readlines()]
+        input = [line.strip() for line in f.readlines()]
 
     task1 = task_one(input)
     print(f"task 1: {task1}")
