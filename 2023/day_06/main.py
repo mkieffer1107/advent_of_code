@@ -29,7 +29,6 @@ def task_one(input):
             if total_distance > distance:
                 num_wins += 1
         # ways_to_win.append(num_wins)
-        print(num_wins)
         ways_to_win *= num_wins
     
     return ways_to_win

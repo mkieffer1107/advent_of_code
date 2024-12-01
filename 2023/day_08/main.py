@@ -16,7 +16,7 @@ def create_map(input):
         pos, next_pos = [x.strip() for x in line.split("=")]
         l_pos, r_pos = [x.strip() for x in next_pos.split(",")]
         l_pos = l_pos.replace("(", "")
-        r_pos = r_pos.replace(")", "")
+        r_pos = r_pos.replace(")", "") 
         mapping[pos] = {"L": l_pos, "R": r_pos}
     return mapping
 
