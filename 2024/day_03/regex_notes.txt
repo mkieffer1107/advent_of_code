@@ -1,0 +1,377 @@
+================================================================================
+from: https://github.com/mkieffer1107/cfg-parsing/blob/main/regex_notes.txt
+https://www.w3schools.com/python/python_regex.asp
+================================================================================
+
+notes adapted from https://web.stanford.edu/~jurafsky/slp3/2.pdf
+
+
+   check out '2.1.3 A Simple Example' and '2.1.5 A More Complex Example'
+
+useful tools: 
+   visualize regex pattern - https://regexper.com/ 
+   test out regex on strings - https://regex101.com/
+
+------------------------------------------------------------------------------------------
+   pattern             match
+/[wW]oodchuck/      Woodchuck or woodchuck
+/[abc]/             ‘a’, ‘b’, or ‘c’
+/[1234567890]/      any digit
+
+/[A-Z]/             an upper case letter
+/[a-z]/             a lower case letter
+/[0-9]/             a single digit
+
+------------------------------------------------------------------------------------------
+If the caret ˆ is the first symbol after the open square brace [,
+the resulting pattern is negated
+
+   pattern             match
+/[ˆA-Z]/            not an upper case letter
+/[ˆSs]/             neither ‘S’ nor ‘s’
+/[ˆ.]/              not a period 
+/[eˆ]/              either ‘e’ or ‘ˆ’
+/aˆb/               the pattern ‘aˆb’
+
+------------------------------------------------------------------------------------------
+/?/, which means “the preceding character or nothing”
+
+   pattern             match
+/woodchucks?/       woodchuck or woodchucks 
+/colou?r/           color or colour
+
+------------------------------------------------------------------------------------------
+The Kleene star means “zero or more occurrences
+of the immediately previous character or regular expression”. 
+
+/a*/ means “any string of zero or more as”: e, a, aa, aaa...  (where e means empty string)
+/aa*/, meaning one a followed by zero or more as: a, aa, aaa, ...
+/[0-9]*/, empty string or any number of digits
+/[0-9][0-9]*/, digit followed by any number of digits or empty
+
+Kleene +, which means “one or more occurrences of the immediately preceding
+character or regular expression”
+
+/[0-9]+/ is the normal way to specify “a sequence of digits”
+
+both mean baa...a!
+/baaa*!/ means baa followed by zero or more a's -- baa(_, a, aa, ...)
+/baa+!/ means ba followed by one or more a's -- ba(a, aa, aaa, ...)
+
+wildcard expression that matches any single character 
+/beg.n/ matches any character between beg and n
+------------------------------------------------------------------------------------------
+Anchors are special characters that anchor regular expressions to particular places in a string
+
+
+   pattern             match
+     ˆ              start of line
+     $              end of line
+     \b             word boundary
+     \B             non-word boundary
+
+/ˆThe dog\.$/ matches a line that contains only the phrase The dog. (\. delimits . to make 
+it a period char and not wildcard operator)
+
+\b is word boundary, so /\bthe\b/ ( r'\bthe\b' in python) matches 'the' but not 'other' because 
+the 'the' in other is surrounded by other characters inside the word
+
+------------------------------------------------------------------------------------------
+/cat|dog/ matches either the string cat or the string dog.
+
+precedence and parenthesis operators 
+Enclosing a pattern in parentheses makes it act like 
+a single character for the purposes of neighboring operators like the pipe | and the Kleene*
+/gupp(y|ies)/ matches guppy or guppies
+
+text: Column 1 Column 2 Column 3.
+/Column [0-9]+ */ will not
+match any number of columns; instead, it will match a single column followed by
+any number of spaces! The star here applies only to the space that precedes it,
+not to the whole sequence. With the parentheses, we could write the expression
+/(Column [0-9]+ *)*/ to match the word Column, followed by a number and
+optional spaces, the whole pattern repeated zero or more times.
+
+------------------------------------------------------------------------------------------
+operator precedence:
+Parenthesis              ()
+Counters                 * + ? {}
+Sequences and anchors    the ˆmy end$
+Disjunction              |
+
+
+Patterns can be ambiguous in another way. Consider the expression /[a-z]*/
+when matching against the text once upon a time. Since /[a-z]*/ matches zero or
+more letters, this expression could match nothing, or just the first letter o, on, onc,
+or once. In these cases regular expressions always match the largest string they can;
+we say that patterns are greedy, expanding to cover as much of a string as they can.
+There are, however, ways to enforce non-greedy matching, using another meaning 
+of the ? qualifier. The operator *? is a Kleene star that matches as little text as
+possible. The operator +? is a Kleene plus that matches as little text as possible.
+
+
+------------------------------------------------------------------------------------------
+'2.1.3 A Simple Example'
+
+Suppose we wanted to write a RE to find cases of the English article the. A simple
+(but incorrect) pattern might be:
+
+                  /the/
+
+One problem is that this pattern will miss the word when it begins a sentence and
+hence is capitalized (i.e., The). This might lead us to the following pattern:
+
+                  /[tT]he/
+
+But we will still incorrectly return texts with the embedded in other words (e.g.,
+other or theology). So we need to specify that we want instances with a word boundary on both sides:
+
+                  /\b[tT]he\b/
+
+Suppose we wanted to do this without the use of /\b/. We might want this since
+/\b/ won’t treat underscores and numbers as word boundaries; but we might want
+to find the in some context where it might also have underlines or numbers nearby
+(the or the25). We need to specify that we want instances in which there are no
+alphabetic letters on either side of the the:
+
+                  /[ˆa-zA-Z][tT]he[ˆa-zA-Z]/
+
+But there is still one more problem with this pattern: it won’t find the word the
+when it begins a line. This is because the regular expression [ˆa-zA-Z], which
+
+we used to avoid embedded instances of the, implies that there must be some single
+(although non-alphabetic) character before the the. We can avoid this by specifying that before the the we require either the beginning-of-line or a non-alphabetic
+character, and the same at the end of the line:
+
+               /(ˆ|[ˆa-zA-Z])[tT]he([ˆa-zA-Z]|$)/
+               --------------       ------------
+               either start of        either end of line or non-character
+               line or non-charcter
+
+------------------------------------------------------------------------------------------
+More operators for simplifying pattern writing
+
+   regex     expansion        match
+     \d       [0-9]          any digit
+     \D       [ˆ0-9]         any non-digit
+     \w       [a-zA-Z0-9_]   any alphanumeric/underscore
+     \W       [ˆ\w]          a non-alphanumeric
+     \s       [ \r\t\n\f]    whitespace (space, tab)
+     \S       [ˆ\s]          Non-whitespace
+
+A range of numbers can also be specified
+ 
+  regex            match
+    *         zero or more occurrences of the previous char or expression
+    +         one or more occurrences of the previous char or expression
+    ?         zero or one occurrence of the previous char or expression
+    {n}       exactly n occurrences of the previous char or expression
+    {n,m}     from n to m occurrences of the previous char or expression
+    {n,}      at least n occurrences of the previous char or expression
+    {,m}      up to m occurrences of the previous char or expression
+
+Special characters and escape sequence
+
+  regex            match
+   \*          an asterisk “*”
+   \.          a period “.”
+   \?          a question mark
+   \n          a newline
+   \t          a tab
+
+------------------------------------------------------------------------------------------
+'2.1.5 A More Complex Example'
+
+Let’s try out a more significant example of the power of REs. Suppose we want to
+build an application to help a user buy a computer on the Web. The user might want
+“any machine with at least 6 GHz and 500 GB of disk space for less than $1000”.
+To do this kind of retrieval, we first need to be able to look for expressions like 6
+GHz or 500 GB or Mac or $999.99. In the rest of this section we’ll work out some
+simple regular expressions for this task
+
+Here’s a regular expression for a dollar sign followed by a string of digits:
+
+         /$[0-9]+/  (dollar sign followed by one or more digits)
+
+Note that the $ character has a different function here than the end-of-line function
+we discussed earlier. Most regular expression parsers are smart enough to realize
+that $ here doesn’t mean end-of-line. 
+
+Now we just need to deal with fractions of dollars. We’ll add a decimal point
+and two digits afterwards:
+
+      /$[0-9]+\.[0-9][0-9]/ (dollar sign - one or more digits - period - digit - digit)
+
+This pattern only allows $199.99 but not $199. We need to make the cents
+optional and to make sure we’re at a word boundary:
+
+     /(ˆ|\W)$[0-9]+(\.[0-9][0-9])?\b/
+
+     (ˆ|\W)            - start of line (^) or word boundary (\W non-alphanumeric -- /$10.00, \t$10.00, ...)
+     $[0-9]+           - dollar sign followed by one or more digits 
+     (\.[0-9][0-9])?   - either zero or one instance of period followed by two digits (199 or 199.99)
+     \b                - the end is a word boundary (word character not followed by another word char)
+
+One last catch! This pattern allows prices like $199999.99 which would be far
+too expensive! We need to limit the dollars:
+
+   /(ˆ|\W)$[0-9]{0,3}(\.[0-9][0-9])?\b/
+
+     (ˆ|\W)            - start of line (^) or word boundary (\W non-alphanumeric -- /$10.00, \t$10.00, ...)
+     $[0-9]{0,3}       - dollar sign followed by zero to three digits
+     (\.[0-9][0-9])?   - either zero or one instance of period followed by two digits (199 or 199.99)
+     \b                - the end is a word boundary (word character not followed by another word char)
+
+How about disk space? We’ll need to allow for optional fractions again (5.5 GB);
+note the use of ? for making the final s optional, and the use of / */ to mean “zero
+or more spaces” since there might always be extra spaces lying around:
+
+   /\b[0-9]+(\.[0-9]+)? *(GB|[Gg]igabytes?)\b/
+
+    number of gigabytes (e.g. '3435.234', '2.2      ', '24', '3     ', ...)
+     \b           - the front is a word boundary (word character not preceded by another word char)
+     [0-9]+       - one or more digits
+     (\.[0-9]+)?  - either zero or one instance of period followed by one or more digits
+     / */         - zero or more spaces between number of gigabytes and the unit
+    
+    the gigabytes unit label (e.g 'GB', 'gigabyte', 'Gigabyte', 'gigabytes', 'Gigabytes')
+     (GB|[Gg]igabytes?) - either string 'GB' or the string 'Gigabyte' or 'gigabyte' followed 
+                          by zero or one 's' to make 'Gigabytes' or 'gigabytes', respectively
+     \b                 - the end is a word boundary (word character not followed by another word char)
+
+Modifying this regular expression so that it only matches more than 500 GB is
+left as an exercise for the reader.
+
+   we have to modify the number of gigabytes, the unit label is fine as is and doesn't need to change
+
+   we can achieve this by matching various patterns of digits
+
+      match 500 to 999   - [5-9]\d\d == [5-9]\d{2} - number from 5 to 9 followed by two digits
+      match 1000+        - [1-9]\d{3,}             - number from 1 to 9 followed by at least 3 digits
+
+   we can now insert these into the number section as a disjunction (500 to 999 | 1000+)
+      
+      /\b([5-9]\d{2}|[1-9]\d{3,})(\.[0-9]+)? *(GB|[Gg]igabytes?)\b/
+
+    number of gigabytes, at least 500 (e.g. '3435.234', '2000.2      ', '500', '500.43     ', ...)
+     \b                       - the front is a word boundary (word character not preceded by another word char)
+     ([5-9]\d{2}|[1-9]\d{3,}) - numbers 500 to 999 or 1000+
+     [0-9]+                   - one or more digits
+     (\.[0-9]+)?              - either zero or one instance of period followed by one or more digits
+     / */                     - zero or more spaces between number of gigabytes and the unit
+    
+    the gigabytes unit label (e.g 'GB', 'gigabyte', 'Gigabyte', 'gigabytes', 'Gigabytes')
+     (GB|[Gg]igabytes?) - either string 'GB' or the string 'Gigabyte' or 'gigabyte' followed 
+                          by zero or one 's' to make 'Gigabytes' or 'gigabytes', respectively
+     \b                 - the end is a word boundary (word character not followed by another word char)
+
+------------------------------------------------------------------------------------------
+substitution and capture groups
+
+substitution operator replaces regexp1 with the pattern
+   
+   s/regexp1/pattern/ 
+
+so s/colour/color corrects the spelling of "my favorite colour is blue" to "my favorite color is blue"
+
+if we want to replace some number n with <n> we can do this by wrapping the number in 
+parentheses and referring back to it with the number operator \1 
+
+   s/([0-9]+)/<\1>/   --> replace one or more digit with those digits wrapped in angle brackets
+
+The parenthesis and number operators can also specify that a certain string or
+expression must occur twice in the text. For example, suppose we are looking for
+the pattern “the Xer they were, the Xer they will be”, where we want to constrain
+the two X’s to be the same string. We do this by surrounding the first X with the
+parenthesis operator, and replacing the second X with the number operator \1, as
+follows:
+
+      /the (.*)er they were, the \1er they will be/
+
+Here the \1 will be replaced by whatever string matched the first item in parentheses. So 
+this will match the 'bigger they were, the bigger they will be' but not 
+'the bigger they were, the faster they will be'.
+
+This use of parentheses to store a pattern in memory is called a capture group.
+Every time a capture group is used (i.e., parentheses surround a pattern), the 
+resulting match is stored in a numbered register. If you match two different 
+sets of parentheses, \2 means whatever matched the second capture group. Thus
+
+      /the (.*)er they (.*), the \1er we \2/    
+      
+            /./ is wildcard -- match any single character
+            so /.*/ means match match zero or more characters
+
+will match 'the faster they ran, the faster we ran' but not the 'faster they ran, the faster
+we ate'. Similarly, the third capture group is stored in \3, the fourth is \4, and so on.
+
+Parentheses thus have a double function in regular expressions; they are used
+to group terms for specifying the order in which operators should apply, and they
+are used to capture something in a register. Occasionally we might want to use
+parentheses for grouping, but don’t want to capture the resulting pattern in a register.
+In that case we use a non-capturing group, which is specified by putting the special 
+commands ?: after the open parenthesis, in the form (?: pattern ).
+
+      /(?:some|a few) (people|cats) like some \1/
+      
+         (?:some|a few) - 'some' or 'a few'  -- do not capture and do not store in \1
+         (people|cats)  - 'people' or 'cats' -- capture result to store in \1
+
+
+will match some 'cats like some cats' but not 'some cats like some some'.
+
+------------------------------------------------------------------------------------------
+lookahead assertions
+
+Finally, there will be times when we need to predict the future: look ahead in the
+text to see if some pattern matches, but not advance the match cursor, so that we can
+then deal with the pattern if it occurs.
+
+These lookahead assertions make use of the (? syntax that we saw in the previous section 
+for non-capture groups. The operator (?= pattern) is true if pattern
+occurs, but is zero-width, i.e. the match pointer doesn’t advance. The operator
+(?! pattern) only returns true if a pattern does not match, but again is zero-width
+and doesn’t advance the cursor. Negative lookahead is commonly used when we
+are parsing some complex pattern but want to rule out a special case. For example
+suppose we want to match, at the beginning of a line, any single word that doesn’t
+start with “Volcano”. We can use negative lookahead to do this:
+
+      /ˆ(?!Volcano)[A-Za-z]+/
+
+         /ˆ/          - start of a line
+         (?!Volcano)  - negative lookahead, match anything that doesn't start with 'Volcano'
+         [A-Za-z]+    - one or more upper- and lowercase characters
+
+
+(?=pattern) positive lookahead
+(?!pattern) negative lookahead
+(?<=pattern) positive lookbehind
+(?!=pattern) negative lookbehind
+
+------------------------------------------------------------------------------------------
+Examples: https://stackoverflow.com/questions/2973436/regex-lookahead-lookbehind-and-atomic-groups
+
+Given the string 'foobarbarfoo':
+
+bar(?=bar)     finds the 1st bar ("bar" which has "bar" after it)
+bar(?!bar)     finds the 2nd bar ("bar" which does not have "bar" after it)
+(?<=foo)bar    finds the 1st bar ("bar" which has "foo" before it)
+(?<!foo)bar    finds the 2nd bar ("bar" which does not have "foo" before it
+
+Look ahead positive (?=) 
+
+      A(?=B) -- Find expression A where expression B follows:
+
+Look ahead negative (?!) 
+
+      A(?!B) -- Find expression A where expression B does not follow:
+
+Look behind positive (?<=) 
+
+      (?<=B)A --Find expression A where expression B precedes:
+
+Look behind negative (?<!) 
+
+      (?<!B)A) -- Find expression A where expression B does not precede:
+
+------------------------------------------------------------------------------------------
