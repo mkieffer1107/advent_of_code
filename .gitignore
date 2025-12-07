@@ -3,3 +3,7 @@
 **/.env
 .DS_Store
 .vscode/
+**/input.txt 
+**/target/
+Cargo.lock
+Cargo.toml
